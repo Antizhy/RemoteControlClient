@@ -23,17 +23,26 @@ namespace RemoteRunClient
             wsclient.OnError += websocket_OnError;
             wsclient.OnMessage += websocket_OnMessage;
             wsclient.OnClose += websocket_OnClose;
+            //timer = new System.Timers.Timer();
+            //timer.Interval = 20;
+            //timerIsRunning = false;
+            //timer.Elapsed += SetPos;
+            board = new Board();
         }
 
 
 
         private HttpServer server;
         private WebSocketClient wsclient;
+        private System.Timers.Timer timer;
         private bool IsWSClient => serverCheckBox.Checked;
         private string ip = "127.0.0.1";
         private int port = 8088;
         private string exePath = "";
         private string args = "";
+        private Board board;
+        private bool timerIsRunning;
+        //private Win32Utils.POINT point;
 
         private void ToggleBtn_Click(object sender, EventArgs e)
         {
@@ -182,6 +191,26 @@ namespace RemoteRunClient
                 {
 
                 }
+                else if (data == "/hide")
+                {
+                    if(timerIsRunning)
+                    {
+                        timerIsRunning = false;
+                        //timer.Stop();
+                        //Win32Utils.ShowCur();
+                        board.Hide();
+                        wsclient.Send("/info 屏幕已释放");
+                    }
+                    else
+                    {
+                        //point = Win32Utils.GetPos();
+                        //timer.Start();
+                        //Win32Utils.HideCur();
+                        board.Show();
+                        timerIsRunning = true;
+                        wsclient.Send("/info 屏幕已挟持");
+                    }
+                }
                 else if (data == "/exit")
                 {
                     wsclient.Send("/info 2秒后退出");
@@ -223,6 +252,15 @@ namespace RemoteRunClient
         private void argBox_TextChanged(object sender, EventArgs e)
         {
             args = argBox.Text;
+        }
+
+        private void SetPos(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            //Win32Utils.SetPos(point.X, point.Y);
+            if(timerIsRunning)
+            {
+                timer.Start();
+            }
         }
     }
 }
